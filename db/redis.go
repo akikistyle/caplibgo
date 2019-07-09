@@ -13,13 +13,12 @@ type Redis struct {
 }
 
 func (r *Redis) Connect() error {
-	conStr := fmt.Sprintf("%v:%v", r.Opt.Host, r.Opt.Port)
 	r.DB = &redis.Pool{
 		MaxIdle:     r.Opt.MaxIdle,
 		MaxActive:   r.Opt.MaxActive,
 		IdleTimeout: r.Opt.Timeout,
 		Dial: func() (redis.Conn, error) {
-			c, err := redis.Dial("tcp", conStr)
+			c, err := redis.Dial("tcp", r.DBSource())
 			if err != nil {
 				return nil, errors.Wrap(err, "Redis can not be connected")
 			}
@@ -54,6 +53,10 @@ func (r *Redis) Close() {
 
 func (r *Redis) Option() *DBOpts {
 	return r.Opt
+}
+
+func (r *Redis) DBSource() string {
+	return fmt.Sprintf("%v:%v", r.Opt.Host, r.Opt.Port)
 }
 
 func NewRedis(opt *DBOpts) (*Redis, error) {

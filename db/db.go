@@ -9,6 +9,7 @@ type DBManager interface {
 	Connect() error
 	Close()
 	Option() *DBOpts
+	DBSource() string
 }
 
 type DBOpts struct {
