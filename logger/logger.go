@@ -6,9 +6,7 @@ import (
 	"os"
 )
 
-type Logger *logrus.Entry
-
-func CreateLogger(version, name string, level int32) Logger {
+func CreateLogger(version, name string, level int32) *logrus.Entry {
 	_log := &logrus.Logger{
 		Out:       os.Stderr,
 		Formatter: new(logrus.TextFormatter),
