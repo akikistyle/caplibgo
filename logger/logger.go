@@ -6,12 +6,12 @@ import (
 	"os"
 )
 
-func CreateLogger(version, name string, level int32) *logrus.Entry {
+func CreateLogger(version, name string, level logrus.Level) *logrus.Entry {
 	_log := &logrus.Logger{
 		Out:       os.Stderr,
 		Formatter: new(logrus.TextFormatter),
 		Hooks:     make(logrus.LevelHooks),
-		Level:     logrus.Level(level),
+		Level:     level,
 	}
 
 	if version != "DEVELOPMENT" {
