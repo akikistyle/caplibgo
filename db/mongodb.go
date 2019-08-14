@@ -46,37 +46,28 @@ func NewMongoDB(opt *DBOpts) (*MongoDB, error) {
 	return m, nil
 }
 
-//func (m *MongoDB) prepareMigration(ctx context.Context, conf *DBMigrationsConfig, assets []string, afn bindata.AssetFunc) (*mongo.Client, source.Driver, *migrate.Migrate, error) {
-//	opt := options.Client().ApplyURI(m.DBSource())
-//	client, err := mongo.Connect(ctx, opt)
+//func (m *MongoDB) prepareMigration(ctx context.Context, conf *DBMigrationsConfig, assets []string, afn bindata.AssetFunc) (source.Driver, *migrate.Migrate, error) {
+//	var err error
+//	dsn := m.DBSource() + "?x-migrations-collection=" + conf.MigrationsItem
+//	driver := &mongodb.Mongo{}
+//	driver, err = driver.Open(dsn)
 //	if err != nil {
-//		return nil, nil, nil, errors.Wrap(err, "error preparing mongodb migration driver")
-//	}
-//
-//	err = client.Connect(ctx)
-//	if err != nil {
-//		return nil, nil, nil, errors.Wrap(err, "error preparing mongodb migration driver")
-//	}
-//
-//	driver, err := mongodb.WithInstance(client, &mongodb.Config{DatabaseName: conf.DatabaseName, MigrationsCollection: conf.MigrationsItem})
-//	if err != nil {
-//		return nil, nil, nil, errors.Wrap(err, "error preparing mongodb migration driver")
+//		return nil, nil, errors.Wrap(err, "error creating mongo driver")
 //	}
 //
 //	s, err := bindata.WithInstance(bindata.Resource(assets, afn))
 //	if err != nil {
-//		return nil, nil, nil, errors.Wrap(err, "error creating source driver")
+//		return nil, nil, errors.Wrap(err, "error creating source driver")
 //	}
 //
 //	mg, err := migrate.NewWithInstance("go-bindata", s, m.Opt.Database, driver)
 //	if err != nil {
-//		return nil, nil, nil, errors.Wrap(err, "error creating a new Migrate instance")
+//		return nil, nil, errors.Wrap(err, "error creating a new Migrate instance")
 //	}
 //	mg.Log = conf.Logger
 //
-//	return client, s, mg, nil
+//	return s, mg, nil
 //}
-
 //
 //func (m *MongoDB) IsMigrationRequired(s source.Driver, mg *migrate.Migrate) (required bool, dirty bool, err error) {
 //	version, dirty, err := mg.Version()
@@ -99,16 +90,13 @@ func NewMongoDB(opt *DBOpts) (*MongoDB, error) {
 //	required = (next > version) || (next == version && dirty)
 //	return required, dirty, nil
 //}
-
+//
 //func (m *MongoDB) MigrateUpIfRequired(conf *DBMigrationsConfig, assets []string, afn bindata.AssetFunc) error {
 //	ctx, _ := context.WithTimeout(context.Background(), 1*time.Hour)
-//	client, s, mg, err := m.prepareMigration(ctx, conf, assets, afn)
+//	s, mg, err := m.prepareMigration(ctx, conf, assets, afn)
 //	if err != nil {
 //		return errors.Wrap(err, "error preparing migration")
 //	}
-//	defer func() {
-//		client.Disconnect(ctx)
-//	}()
 //
 //	required, dirty, err := m.IsMigrationRequired(s, mg)
 //	if err != nil {
@@ -141,6 +129,20 @@ func NewMongoDB(opt *DBOpts) (*MongoDB, error) {
 //
 //			time.Sleep(time.Duration(retry) * time.Second)
 //		}
+//	}
+//
+//	return nil
+//}
+//
+//func (m *MongoDB) MigrateUp(conf *DBMigrationsConfig, assets []string, afn bindata.AssetFunc) error {
+//	_, mg, err := m.prepareMigration(context.Background(), conf, assets, afn)
+//	if err != nil {
+//		return errors.Wrap(err, "error preparing migration")
+//	}
+//	defer m.Close()
+//
+//	if err := mg.Up(); err != nil && err != migrate.ErrNoChange {
+//		return errors.Wrap(err, "error migrating database")
 //	}
 //
 //	return nil
