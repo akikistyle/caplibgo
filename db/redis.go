@@ -67,3 +67,44 @@ func NewRedis(opt *DBOpts) (*Redis, error) {
 	}
 	return m, nil
 }
+
+func (r *Redis) Get(key string) ([]byte, error) {
+	conn := r.DB.Get()
+	defer conn.Close()
+	return redis.Bytes(conn.Do("GET", key))
+}
+
+func (r *Redis) Set(key string, val string, exp int64) error {
+	conn := r.DB.Get()
+	defer conn.Close()
+	_, err := conn.Do("SET", key, val)
+	if exp > 0 {
+		_, err = conn.Do("EXPIRE", key, exp)
+	}
+	return err
+}
+
+func (r *Redis) IsExist(key string) bool {
+	conn := r.DB.Get()
+	defer conn.Close()
+	a, _ := conn.Do("EXISTS", key)
+	i := a.(int64)
+	if i > 0 {
+		return true
+	}
+	return false
+}
+
+func (r *Redis) Delete(key string) error {
+	conn := r.DB.Get()
+	defer conn.Close()
+	_, err := conn.Do("DEL", key)
+	return err
+}
+
+func (r *Redis) Flush() error {
+	conn := r.DB.Get()
+	defer conn.Close()
+	_, err := conn.Do("FLUSHDB")
+	return err
+}
