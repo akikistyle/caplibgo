@@ -9,6 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"log"
 	"os"
 	"time"
@@ -21,10 +22,36 @@ type PostgresDB struct {
 
 func (p *PostgresDB) Connect() error {
 	var err error
-	p.DB, err = sqlx.Connect("postgres", p.DBSource())
+	//p.DB, err = sqlx.Connect("postgres", p.DBSource())
+	//if err != nil {
+	//	return errors.Wrap(err, "Postgres can not be connected")
+	//}
+
+	p.DB, err = sqlx.Open("postgres", p.DBSource())
 	if err != nil {
-		return errors.Wrap(err, "Postgres can not be connected")
+		return errors.Wrap(err, "Postgres connection cannot be opened")
 	}
+	const maxRetries = 6
+	for i := 1; i <= maxRetries; i++ {
+		if err = p.DB.Ping(); err != nil {
+			logrus.WithError(err).WithField("attempt", i).Warnln("Postgres not yet pinging")
+			if i < maxRetries {
+				// don't sleep on the last failure
+				time.Sleep(time.Duration(i) * time.Second)
+			}
+			continue
+		}
+		//logrus.Println("connected to Postgres")
+		if p.Opt.MaxActive > 0 {
+			p.DB.SetMaxOpenConns(p.Opt.MaxActive)
+		}
+		if p.Opt.MaxIdle > 0 {
+			p.DB.SetMaxIdleConns(p.Opt.MaxIdle)
+		}
+
+		return nil
+	}
+
 	return nil
 }
 
