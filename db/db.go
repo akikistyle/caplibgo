@@ -32,6 +32,8 @@ func NewPool(driver string, opt *DBOpts) (DBManager, error) {
 		return NewRedis(opt)
 	case "postgres":
 		return NewPostgres(opt)
+	case "mysql":
+		return NewMysql(opt)
 	}
 	return nil, errors.New("can not find this driver type")
 }
