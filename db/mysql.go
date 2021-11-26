@@ -60,7 +60,7 @@ func (m *MysqlDB) Option() *DBOpts {
 }
 
 func (m *MysqlDB) DBSource() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Asia%2FShanghai&charset=utf8", m.Opt.User, m.Opt.Password, m.Opt.Host, m.Opt.Port, m.Opt.Database)
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&charset=utf8", m.Opt.User, m.Opt.Password, m.Opt.Host, m.Opt.Port, m.Opt.Database)
 }
 
 func NewMysql(opt *DBOpts) (*MysqlDB, error) {
