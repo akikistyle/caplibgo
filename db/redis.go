@@ -102,6 +102,13 @@ func (r *Redis) Delete(key string) error {
 	return err
 }
 
+func (r *Redis) Incr(key string) (int64, error) {
+	conn := r.DB.Get()
+	defer conn.Close()
+	rsp, err := redis.Int64(conn.Do("INCR", key))
+	return rsp, err
+}
+
 func (r *Redis) Flush() error {
 	conn := r.DB.Get()
 	defer conn.Close()
